@@ -1,51 +1,47 @@
-import * as FileSystem from 'expo-file-system';
+interface ImageSetParams {
+  title: string;
+  description?: string;
+  startTime: Date;
+  endTime?: Date;
+}
 
 class ImageSet {
   title: string;
   description: string;
-  startTime: string;
-  endTime?: string;  // Optional until capturing ends
-  folderName: string;
+  startTime: Date;
+  endTime?: Date;
 
-  constructor(title: string, description: string) {
+  constructor({ title, description, startTime, endTime }: ImageSetParams) {
     this.title = title;
-    this.description = description;
-    this.startTime = new Date().toISOString();
-    this.folderName = `${this.title}_${Date.now()}`;
+    this.description = description || "";
+    this.startTime = startTime;
+    this.endTime = endTime;
   }
 
-  // Generates the folder structure for the image set
-  async initializeFolderStructure() {
-    const appFolder = `${FileSystem.documentDirectory}myAppFolder`;
-    const imageSetsFolder = `${appFolder}/imageSets`;
-    const imageSetFolder = `${imageSetsFolder}/${this.folderName}`;
-
-    await FileSystem.makeDirectoryAsync(appFolder, { intermediates: true });
-    await FileSystem.makeDirectoryAsync(imageSetsFolder, { intermediates: true });
-    await FileSystem.makeDirectoryAsync(imageSetFolder, { intermediates: true });
-
-    return imageSetFolder;
+  // Method to update the endTime, if needed
+  setEndTime(endTime: Date) {
+    this.endTime = endTime;
   }
 
-  // Save metadata as a JSON file in the image set folder
-  async saveMetadata() {
-    const imageSetFolder = await this.initializeFolderStructure();
-    const metaFilePath = `${imageSetFolder}/meta.json`;
-
-    const metadata = {
+  // Method to convert ImageSet instance to a JSON object
+  toJSON() {
+    return JSON.stringify({
       title: this.title,
       description: this.description,
-      startTime: this.startTime,
-      endTime: this.endTime || null,
-    };
-
-    await FileSystem.writeAsStringAsync(metaFilePath, JSON.stringify(metadata, null, 2));
+      startTime: this.startTime.toISOString(),
+      endTime: this.endTime?.toISOString(),
+    });
   }
 
-  // Call this when ending the capture to set the end time and update metadata
-  async endCapture() {
-    this.endTime = new Date().toISOString();
-    await this.saveMetadata();
+  // Static method to create an ImageSet instance from a JSON object
+  static fromJSON(json: string) {
+    const { title, description, startTime, endTime } = JSON.parse(json);
+    return new ImageSet({
+      title,
+      description,
+      startTime: new Date(startTime),
+      endTime: endTime ? new Date(endTime) : undefined,
+    });
   }
 }
 
