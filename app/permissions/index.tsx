@@ -1,8 +1,8 @@
 // app/permissions/index.tsx
-import { Camera, PermissionStatus } from "expo-camera";
 import { useRouter } from "expo-router";
 import React from "react";
 import { Button, StyleSheet, Text, View } from "react-native";
+import { Camera } from "react-native-vision-camera";
 
 const PermissionsScreen = () => {
   const router = useRouter();
@@ -27,8 +27,8 @@ const PermissionsScreen = () => {
   // };
 
   const requestCameraPermissions = async () => {
-    const { status } = await Camera.requestCameraPermissionsAsync();
-    if (status === PermissionStatus.GRANTED) {
+    const status = await Camera.requestCameraPermission();
+    if (status === "granted") {
       navigateFurther();
     }
   };

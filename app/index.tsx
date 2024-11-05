@@ -1,8 +1,8 @@
-import { Camera } from "expo-camera";
 import { useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { Camera } from "react-native-vision-camera";
 
 SplashScreen.preventAutoHideAsync(); // Keep the splash screen visible
 
@@ -11,7 +11,7 @@ const App = () => {
 
   useEffect(() => {
     const checkPermissions = async () => {
-      const { status } = await Camera.requestCameraPermissionsAsync();
+      const status = await Camera.requestCameraPermission();
       await SplashScreen.hideAsync();
       if (status === "granted") {
         router.push("./imagesets-list");

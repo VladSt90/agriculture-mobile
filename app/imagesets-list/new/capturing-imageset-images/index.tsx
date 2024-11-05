@@ -1,37 +1,33 @@
 import ImageSet from "@/models/ImageSet";
 import { getImageSetFolderPath, updateImageSet } from "@/utils/ImageSet.utils";
-import { CameraView } from "expo-camera";
-import * as FileSystem from "expo-file-system";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Camera,
+  CameraRuntimeError,
+  useCameraDevice,
+} from "react-native-vision-camera";
 
 const CaptureImagesScreen = () => {
   const [imageCount, setImageCount] = useState(0);
-  const cameraRef = useRef<CameraView>(null);
+  const cameraRef = useRef<Camera>(null);
   const isCapturingRef = useRef<Boolean>(false);
   const router = useRouter();
   const { imageSetJson } = useLocalSearchParams<{ imageSetJson: string }>();
   const imageSetRef = useRef<ImageSet>();
   const imageSetFolderRef = useRef<string | undefined>();
+  const device = useCameraDevice("back");
 
   const takePicturesLoop = async () => {
     console.log("takePicturesLoop start");
     if (cameraRef.current && isCapturingRef.current) {
       try {
-        const photo = await cameraRef.current.takePictureAsync({
-          skipProcessing: true,
+        const photo = await cameraRef.current.takePhoto({
+          path: imageSetFolderRef.current?.replace("file://", ""),
         });
         if (photo) {
-          const fileName = `${
-            imageSetFolderRef.current
-          }photo_${Date.now()}.jpg`;
-          await FileSystem.moveAsync({
-            from: photo.uri,
-            to: fileName,
-          });
-          console.log("Saved photo to:", fileName);
-          setImageCount((prevCount) => prevCount + 1); // Increment image count
+          setImageCount((prevCount) => prevCount + 1);
           setTimeout(takePicturesLoop, 1000);
         }
       } catch (error) {
@@ -55,11 +51,14 @@ const CaptureImagesScreen = () => {
     setTimeout(() => {
       isCapturingRef.current = true;
       takePicturesLoop();
-    }, 5000);
+    }, 2000);
+  };
+
+  const onCameraError = (error: CameraRuntimeError) => {
+    console.error("Camera error:", error);
   };
 
   const handleStopCapture = () => {
-    console.log("Stop button pressed. Navigating to save screen.");
     imageSetRef.current!.endTime = new Date();
     updateImageSet(imageSetRef.current!);
 
@@ -75,12 +74,17 @@ const CaptureImagesScreen = () => {
         <Text style={styles.counterLabel}>images captured</Text>
         <Text style={styles.counter}>{imageCount}</Text>
       </View>
-
-      <CameraView
-        style={styles.camera}
-        ref={cameraRef}
-        onCameraReady={onCameraReady}
-      />
+      {device && (
+        <Camera
+          style={styles.camera}
+          ref={cameraRef}
+          device={device}
+          isActive={true}
+          photo={true}
+          onInitialized={onCameraReady}
+          onError={onCameraError}
+        />
+      )}
 
       <TouchableOpacity style={styles.stopButton} onPress={handleStopCapture}>
         <Text style={styles.stopButtonText}>Stop</Text>
