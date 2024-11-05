@@ -14,9 +14,9 @@ const App = () => {
       const status = await Camera.requestCameraPermission();
       await SplashScreen.hideAsync();
       if (status === "granted") {
-        router.push("./imagesets-list");
+        router.replace("./imagesets-list");
       } else {
-        router.push("./permissions");
+        router.replace("./permissions");
       }
     };
     checkPermissions();

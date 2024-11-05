@@ -3,7 +3,15 @@ import { getImageSetFolderPath } from "@/utils/ImageSet.utils";
 import * as FileSystem from "expo-file-system";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { FlatList, Image, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 const ImageSetDetailsScreen = () => {
   const { imageSetJson } = useLocalSearchParams<{ imageSetJson: string }>();
@@ -26,6 +34,10 @@ const ImageSetDetailsScreen = () => {
   const renderImage = ({ item }: { item: string }) => (
     <Image source={{ uri: item }} style={styles.image} />
   );
+
+  const handleSendToServer = () => {
+    Alert.alert("Sending to server");
+  };
 
   if (!imageSet) {
     return (
@@ -54,6 +66,9 @@ const ImageSetDetailsScreen = () => {
         numColumns={3}
         contentContainerStyle={styles.gallery}
       />
+      <TouchableOpacity style={styles.sendButton} onPress={handleSendToServer}>
+        <Text style={styles.sendButtonText}>Send to server</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -63,7 +78,8 @@ export default ImageSetDetailsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    paddingTop: 16,
+    paddingHorizontal: 16,
     backgroundColor: "#fff",
   },
   title: {
@@ -93,5 +109,20 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     margin: "1.5%",
     borderRadius: 8,
+  },
+  sendButton: {
+    position: "absolute",
+    bottom: 16,
+    left: 40,
+    right: 40,
+    backgroundColor: "#007bff",
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  sendButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });

@@ -64,7 +64,6 @@ const CaptureImagesScreen = () => {
 
     isCapturingRef.current = false;
     router.dismissAll();
-    router.push("/imagesets-list");
     router.push({ pathname: "/imageset-details", params: { imageSetJson } });
   };
 
